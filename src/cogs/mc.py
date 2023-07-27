@@ -36,7 +36,11 @@ class server:
 					players = playerdata['online']
 					self.online=True
 					self.players = players
-					self.playerlist = playerdata['sample']
+					try:
+						self.playerlist = playerdata['sample'] 
+					except KeyError:
+						self.playerlist = None
+
 				else: #if  not online.
 					self.online = False
 			else: #strange response code given.
@@ -66,10 +70,13 @@ class mcserver(commands.Cog):
 		server = self.server
 		server.update_status()
 		embed = discord.Embed(title=f"Server status: rulersofchaos.mcpe.lol:19200",description=f"Online: {server.online}\nPlayers: {server.players} \nPlayer list: ",color=discord.Color.red())
-		for playerinfo in server.playerlist:
-			embed.add_field(name=f"Name: {playerinfo['name']}", value=f"ID:{playerinfo['id']}")
-		await ctx.send(embed=embed)
-		return
+		try:
+			for playerinfo in server.playerlist:
+				embed.add_field(name=f"Name: {playerinfo['name']}", value=f"ID:{playerinfo['id']}")
+		except TypeError:
+			embed.add_field(name=f"No players online!", value="A bit lonely...")
+		finally:
+			await ctx.send(embed=embed)
 
 	@tasks.loop(seconds=60.0)
 	async def background_update(self):
